@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.docs import get_redoc_html
-
+from app.api import auth ,project
+from app.models import User, Device, Project  # Ensure models are loaded for SQLAlchemy registry
 
 app = FastAPI(
     title="NetCTRL API",
@@ -17,7 +18,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+app.include_router(auth.router)
+app.include_router(project.router)
 
 # Manually serve ReDoc with a pinned CDN version — fixes the blank page issue
 @app.get("/redoc", include_in_schema=False)

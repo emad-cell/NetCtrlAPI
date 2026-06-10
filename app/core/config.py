@@ -1,7 +1,8 @@
 from pydantic_settings import BaseSettings ,SettingsConfigDict
+from pydantic import Field
 
 class Settings(BaseSettings):
-    SECRET_KEY: str = ""
+    SECRET_KEY: str = Field(..., description="Secret key must be set in Environment")
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     DATABASE_URL: str = ""
