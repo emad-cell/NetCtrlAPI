@@ -1,14 +1,8 @@
-import enum
 
 from sqlalchemy import Column, Enum, Integer, String, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from datetime import datetime ,timezone
 from app.db.database import Base
-
-class UserRole(str, enum.Enum):
-    admin    = "admin"
-    operator = "operator"
-    viewer   = "viewer"
 
 class User(Base):
     __tablename__ = "users"
@@ -18,7 +12,6 @@ class User(Base):
     email = Column(String(255), unique=True, index=True, nullable=False)
     hashed_password = Column(String(255), nullable=False)
     is_active = Column(Boolean, default=True)
-    role= Column(Enum(UserRole), default=UserRole.viewer, nullable=False)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     # One user can manage many devices

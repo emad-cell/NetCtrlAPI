@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from app.schemas.auth import RegisterRequest, TokenResponse, UserOut
-from app.models.user import User ,UserRole
+from app.models.user import User 
 from app.core.exceptions import InvalidCredentialsException, UserAlreadyExistsException
 from app.core.security import (
     hash_password,
@@ -38,7 +38,6 @@ def register_user(
         hashed_password=hash_password(
             payload.password
         ),
-        role=UserRole.viewer,
     )
 
     db.add(user)
@@ -69,9 +68,6 @@ def login_user(
         # Mitigate timing attack by performing a dummy hash verification
         hash_password(password)
         raise InvalidCredentialsException("Invalid credentials")
-    print("PASSWORD:", repr(password))
-    print("PASSWORD LENGTH:", len(password))
-    print("HASH:", repr(user.hashed_password))
     if not verify_password(
         password,
         user.hashed_password
@@ -82,7 +78,6 @@ def login_user(
         {
             "sub": str(user.id),
             "email": user.email,
-            "role": user.role.value,
         }
     )
 
