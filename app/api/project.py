@@ -29,6 +29,29 @@ router = APIRouter(
     tags=["Projects"]
 )
 
+######################Get Project By ID
+@router.get(
+    "/{project_id}",
+    response_model=ProjectResponse
+)
+def get_project(
+    project_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    try:
+        return projectService.get_project_by_id(
+            db=db,
+            project_id=project_id,
+            current_user=current_user
+        )
+    except ProjectNotFoundException as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
+        )
+######################
+
 ######################Create Project
 @router.post(
     "",
@@ -46,7 +69,6 @@ async def create_project(
         current_user=current_user
     )
 ######################
-
 
 ######################Get User Projects
 @router.get(

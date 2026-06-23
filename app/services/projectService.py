@@ -14,6 +14,30 @@ from app.services.Gns3.Projects import (
      delete_gns3_project
 )
 
+##########################Get Project By Id
+def get_project_by_id(
+    db: Session,
+    project_id: int,
+    current_user: User
+) -> Project:
+
+    project = (
+        db.query(Project)
+        .filter(
+            Project.id == project_id,
+            Project.owner_id == current_user.id
+        )
+        .first()
+    )
+
+    if not project:
+        raise ProjectNotFoundException(
+            "Project not found"
+        )
+
+    return project
+##########################
+
 ##########################Create Project
 async def create_project(
     db: Session,
@@ -68,14 +92,11 @@ async def open_project(
     current_user: User
 ) -> Project:
 
-    project = (
-        db.query(Project)
-        .filter(
-            Project.id == project_id,
-            Project.owner_id == current_user.id
-        )
-        .first()
-    )
+    project = get_project_by_id(
+    db=db,
+    project_id=project_id,
+    current_user=current_user
+)
 
     if not project:
         raise ProjectNotFoundException(
@@ -96,14 +117,11 @@ async def close_project(
     current_user: User
 ) -> Project:
 
-    project = (
-        db.query(Project)
-        .filter(
-            Project.id == project_id,
-            Project.owner_id == current_user.id
-        )
-        .first()
-    )
+    project = get_project_by_id(
+    db=db,
+    project_id=project_id,
+    current_user=current_user
+)
 
     if not project:
         raise ProjectNotFoundException(
@@ -124,14 +142,11 @@ async def delete_project(
     current_user: User
 ) -> None:
 
-    project = (
-        db.query(Project)
-        .filter(
-            Project.id == project_id,
-            Project.owner_id == current_user.id
-        )
-        .first()
-    )
+    project = get_project_by_id(
+    db=db,
+    project_id=project_id,
+    current_user=current_user
+)
 
     if not project:
         raise ProjectNotFoundException(
