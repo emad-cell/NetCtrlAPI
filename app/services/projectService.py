@@ -9,7 +9,6 @@ from app.core.exceptions import (
 from app.services.Gns3.Projects import (
     create_gns3_project,
     open_gns3_project,
-    open_gns3_project,
     close_gns3_project,
      delete_gns3_project
 )
@@ -18,7 +17,7 @@ from app.services.Gns3.Projects import (
 def get_project_by_id(
     db: Session,
     project_id: int,
-    current_user: User
+    current_user: User,
 ) -> Project:
 
     project = (
@@ -97,12 +96,6 @@ async def open_project(
     project_id=project_id,
     current_user=current_user
 )
-
-    if not project:
-        raise ProjectNotFoundException(
-            "Project not found"
-        )
-
     await open_gns3_project(
         str(project.project_id)
     )
@@ -122,12 +115,6 @@ async def close_project(
     project_id=project_id,
     current_user=current_user
 )
-
-    if not project:
-        raise ProjectNotFoundException(
-            "Project not found"
-        )
-
     await close_gns3_project(
         str(project.project_id)
     )
@@ -147,12 +134,6 @@ async def delete_project(
     project_id=project_id,
     current_user=current_user
 )
-
-    if not project:
-        raise ProjectNotFoundException(
-            "Project not found"
-        )
-
     await delete_gns3_project(
         str(project.project_id)
     )

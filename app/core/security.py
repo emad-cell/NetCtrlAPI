@@ -33,8 +33,8 @@ def decrypt_secret(value: str | None) -> str | None:
 
     try:
         return get_fernet().decrypt(value.encode()).decode()
-    except InvalidToken:
-        ValueError("Invalid encrypted value")
+    except InvalidToken as exc:
+        raise ValueError("Invalid encrypted value") from exc
 
 def get_user_id_from_token(token: str) -> int | None:
     payload = decode_access_token(token)
