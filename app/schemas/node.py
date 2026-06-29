@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field,ConfigDict
 
 
 class NodeCreate(BaseModel):
@@ -15,20 +15,25 @@ class NodeCreate(BaseModel):
 
 
 class NodeResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     node_id: str
     name: str
     node_type: str
-    status: str | None
-    console: int | None
-    console_host: str | None
+
+    status: str | None = None
+
+    console: int | None = None
+    console_host: str | None = None
+
+    compute_id: str | None = None
+
     x: int
     y: int
-    compute_id: str | None
-
-from pydantic import BaseModel, Field
 
 
-class NodeUpadte(BaseModel):
+
+class NodeUpdate(BaseModel):
     name: str = Field(
         ...,
         min_length=1,

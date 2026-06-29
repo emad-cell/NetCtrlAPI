@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from app.models.user import User
 from app.services.projectService import get_project_by_id
 from app.services.Gns3 import Nodes as gns3
-from app.schemas.node import NodeCreate , NodeUpdatePosition, NodeUpadte
+from app.schemas.node import NodeCreate , NodeUpdatePosition, NodeUpdate
 from app.services.Gns3.Nodes import (
     create_node as create_gns3_node,
     start_node as start_gns3_node,
@@ -162,7 +162,7 @@ async def rename_node(
     db: Session,
     project_id: int,
     node_id: str,
-    payload: NodeUpadte,
+    payload: NodeUpdate,
     current_user: User,
 ) -> dict:
 
