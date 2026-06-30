@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.docs import get_redoc_html
 from fastapi.responses import JSONResponse
 
-from app.api import auth, project, server ,node
+from app.api import auth, project, server ,node ,link
 from app.models import User, Device, Project
 from app.services.Gns3.server import start_gns3_server, stop_gns3_server
 from app.core.exceptions import GNS3UnreachableException, GNS3RequestException
@@ -56,6 +56,7 @@ app.include_router(auth.router)
 app.include_router(project.router)
 app.include_router(server.router)
 app.include_router(node.router)
+app.include_router(link.router)
 
 
 @app.get("/redoc", include_in_schema=False)

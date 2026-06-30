@@ -4,7 +4,6 @@ from sqlalchemy.orm import Session
 
 from app.models.user import User
 from app.services.projectService import get_project_by_id
-from app.services.Gns3 import Nodes as gns3
 from app.schemas.node import NodeCreate , NodeUpdatePosition, NodeUpdate
 from app.services.Gns3.Nodes import (
     create_node as create_gns3_node,
@@ -14,6 +13,9 @@ from app.services.Gns3.Nodes import (
     delete_node as delete_gns3_node,
     rename_node as rename_gns3_node,
     move_node as move_gns3_node,
+    get_nodes as get_gns3_nodes,
+    get_node as get_gns3_node,
+
 
 )
 
@@ -31,7 +33,7 @@ async def get_nodes(
         current_user=current_user
     )
 
-    return await gns3.get_nodes(
+    return await get_gns3_nodes(
         project_id=str(project.project_id)
     )
 ##########################
@@ -50,7 +52,7 @@ async def get_node(
         current_user=current_user
     )
 
-    return await gns3.get_node(
+    return await get_gns3_node(
         project_id=str(project.project_id),
         node_id=node_id
     )
