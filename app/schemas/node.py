@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field,ConfigDict
+from pydantic import BaseModel, Field,ConfigDict,model_validator
 
 
 class NodeCreate(BaseModel):
@@ -10,8 +10,6 @@ class NodeCreate(BaseModel):
 
     compute_id: str = "local"
 
-    x: int = 0
-    y: int = 0
 
 
 class NodeResponse(BaseModel):

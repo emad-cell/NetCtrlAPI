@@ -61,3 +61,16 @@ class GNS3RequestException(GNS3Exception):
         self.status_code = status_code
         self.detail = detail
         super().__init__(detail)
+
+# ==========================
+# Templates
+# ==========================
+
+class TemplateException(NetCTRLException):
+    """Base class for template-related exceptions."""
+    pass
+
+
+class TemplateNotFoundException(TemplateException):
+    """Raised when the requested template does not exist."""
+    pass
