@@ -1,7 +1,7 @@
 from typing import Any
 
 from sqlalchemy.orm import Session
-
+from app.core.exceptions import NetmikoUnreachableException
 from app.models.user import User
 from app.services.projectService import get_project_by_id
 from app.schemas.node import NodeCreate , NodeUpdatePosition, NodeUpdate
@@ -202,4 +202,34 @@ async def move_node(
         payload.x,
         payload.y,
     )
+###########################
+
+##########################Get Node Console
+async def get_node_console(
+    db: Session,
+    project_id: int,
+    node_id: str,
+    current_user: User,
+) -> tuple[str, int]:
+
+    project = get_project_by_id(
+        db=db,
+        project_id=project_id,
+        current_user=current_user,
+    )
+
+    node = await get_gns3_node(
+        project_id=str(project.project_id),
+        node_id=node_id,
+    )
+
+    console_host = node.get("console_host")
+    console_port = node.get("console")
+
+    if not console_host or not console_port:
+        raise NetmikoUnreachableException(
+            "Node console is not available. Make sure the node is started."
+        )
+
+    return console_host, console_port
 ###########################

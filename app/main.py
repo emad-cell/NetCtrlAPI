@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.docs import get_redoc_html
 from fastapi.responses import JSONResponse
 
-from app.api import auth, project, server ,node ,link,template,topology
+from app.api import auth, project, server ,node ,link,template,topology,automation
 from app.models import User, Device, Project
 from app.services.Gns3.server import start_gns3_server, stop_gns3_server
 from app.core.exceptions import GNS3UnreachableException, GNS3RequestException
@@ -46,7 +46,11 @@ async def generic_handler(request: Request, exc: Exception):
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
+    allow_origin_regex=r"^http://(localhost|127\.0\.0\.1):\d+$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -59,6 +63,7 @@ app.include_router(node.router)
 app.include_router(link.router)
 app.include_router(template.router)
 app.include_router(topology.router)
+app.include_router(automation.router)
 
 @app.get("/redoc", include_in_schema=False)
 async def redoc_html():

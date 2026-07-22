@@ -74,3 +74,21 @@ class TemplateException(NetCTRLException):
 class TemplateNotFoundException(TemplateException):
     """Raised when the requested template does not exist."""
     pass
+
+# ==========================
+# Netmiko / Automation
+# ==========================
+
+class NetmikoException(NetCTRLException):
+    """Base class for Netmiko/automation-related exceptions."""
+    pass
+
+
+class NetmikoUnreachableException(NetmikoException):
+    """Raised when the device console cannot be reached."""
+    pass
+
+
+class NetmikoAuthException(NetmikoException):
+    """Raised when authentication to the device fails."""
+    pass
