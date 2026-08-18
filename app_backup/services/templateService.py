@@ -3,13 +3,13 @@ from app.services.Gns3.Templates import (
     get_templates as get_gns3_templates,
     get_template as get_gns3_template,
 )
-from app.services.deviceClassificationService import get_device_type
+from app.services.topologyRender import render_topology_image
 
 
 ########################## List Templates ##########################
 async def get_templates() -> list[dict]:
-    templates = await get_gns3_templates()
-    return [_with_device_type(template) for template in templates]
+
+    return await get_gns3_templates()
 ######################################################################
 
 ########################## Get Template #############################
@@ -18,19 +18,12 @@ async def get_template(
 ) -> dict:
 
     try:
-        template = await get_gns3_template(
+        return await get_gns3_template(
             template_id=template_id,
         )
-        return _with_device_type(template)
     except GNS3RequestException as e:
         if e.status_code == 404:
             raise TemplateNotFoundException("Template not found")
         raise
 ######################################################################
 
-
-def _with_device_type(template: dict) -> dict:
-    return {
-        **template,
-        "device_type": get_device_type(template),
-    }

@@ -10,4 +10,3 @@ class TemplateResponse(BaseModel):
     template_type: str
     compute_id: str | None = None
     symbol: str | None = None
-    device_type: str | None = None

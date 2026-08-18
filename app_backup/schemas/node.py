@@ -18,7 +18,6 @@ class NodeResponse(BaseModel):
     node_id: str
     name: str
     node_type: str
-    template_id: str | None = None
 
     status: str | None = None
 

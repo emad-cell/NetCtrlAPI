@@ -92,28 +92,3 @@ class NetmikoUnreachableException(NetmikoException):
 class NetmikoAuthException(NetmikoException):
     """Raised when authentication to the device fails."""
     pass
-
-
-class AutomationException(NetCTRLException):
-    """Base class for automation business-rule exceptions."""
-    pass
-
-
-class DeviceTypeUndeterminedException(AutomationException):
-    """Raised when a node cannot be classified safely."""
-    pass
-
-
-class UnsupportedAutomationException(AutomationException):
-    """Raised when an automation is unavailable for a device type."""
-    pass
-
-
-class ConnectivityResultParseException(AutomationException):
-    """Raised when a connectivity command result cannot be normalized safely."""
-    pass
-
-
-class InterfaceDiscoveryParseException(AutomationException):
-    """Raised when interface discovery output cannot be normalized safely."""
-    pass
