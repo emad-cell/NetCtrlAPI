@@ -13,6 +13,7 @@ from app.core.exceptions import (
 from app.db.database import get_db
 from app.models.user import User
 from app.schemas.connectivity import (
+    ConnectivityCheckResponse,
     ConnectivityEndpointsResponse,
     PingRequest,
     PingResponse,
@@ -51,6 +52,29 @@ async def list_connectivity_endpoints(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(exc),
         )
+
+
+@endpoints_router.post(
+    "/check",
+    response_model=ConnectivityCheckResponse,
+)
+async def check_project_connectivity(
+    project_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    try:
+        return await connectivityService.check_project_connectivity(
+            db=db,
+            project_id=project_id,
+            current_user=current_user,
+        )
+    except ProjectNotFoundException as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc),
+        )
+
 
 
 @router.post(

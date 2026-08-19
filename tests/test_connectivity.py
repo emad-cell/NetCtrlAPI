@@ -285,3 +285,153 @@ class ConnectivityApiTests(unittest.IsolatedAsyncioTestCase):
                 )
 
         self.assertEqual(raised.exception.status_code, 422)
+
+
+class ProjectConnectivityCheckTests(unittest.IsolatedAsyncioTestCase):
+    def _node(self, node_id, name, interface_name, ip):
+        return {
+            "node_id": node_id,
+            "name": name,
+            "ports": [
+                {
+                    "adapter_number": 0,
+                    "port_number": 0,
+                    "name": interface_name,
+                }
+            ],
+            "node_type": "dynamips",
+        }
+
+    def _discovered(self, node_id, name, interface_name, ip):
+        return [
+            connectivityService.DiscoveredInterface(
+                node_id=node_id,
+                node_name=name,
+                interface=interface_name,
+                ip_address=IPv4Address(ip) if ip else None,
+                status="up",
+                protocol="up",
+            )
+        ]
+
+    async def test_project_check_runs_bidirectional_neighbor_pings(self):
+        nodes = [
+            self._node("r1", "R1", "FastEthernet0/0", "10.0.0.1"),
+            self._node("r2", "R2", "FastEthernet0/0", "10.0.0.2"),
+        ]
+        links = [
+            {
+                "link_id": "l1",
+                "nodes": [
+                    {"node_id": "r1", "adapter_number": 0, "port_number": 0},
+                    {"node_id": "r2", "adapter_number": 0, "port_number": 0},
+                ],
+            }
+        ]
+
+        async def discover(*args, **kwargs):
+            node_id = kwargs["node_id"]
+            node = next(item for item in nodes if item["node_id"] == node_id)
+            return self._discovered(
+                node_id,
+                node["name"],
+                node["ports"][0]["name"],
+                "10.0.0.1" if node_id == "r1" else "10.0.0.2",
+            )
+
+        async def ping(*args, **kwargs):
+            return {
+                "source_node_id": kwargs["node_id"],
+                "destination": kwargs["destination"],
+                "reachable": True,
+                "packet_loss_percent": 0,
+                "latency_ms": 1.0,
+            }
+
+        with (
+            patch.object(connectivityService, "get_project_nodes", new_callable=AsyncMock, return_value=nodes),
+            patch.object(connectivityService, "discover_node_interfaces", side_effect=discover),
+            patch.object(connectivityService, "get_project_links", new_callable=AsyncMock, return_value=links),
+            patch.object(connectivityService, "run_node_ping", side_effect=ping) as run_ping,
+        ):
+            result = await connectivityService.check_project_connectivity(None, 1, None)
+
+        self.assertEqual(len(result["results"]), 2)
+        self.assertEqual([item.state for item in result["results"]], ["reachable", "reachable"])
+        self.assertEqual(run_ping.await_count, 2)
+        destinations = [call.kwargs["destination"] for call in run_ping.await_args_list]
+        self.assertEqual(destinations, [IPv4Address("10.0.0.2"), IPv4Address("10.0.0.1")])
+
+    async def test_ambiguous_port_mapping_is_skipped_without_ping(self):
+        nodes = [
+            self._node("r1", "R1", "FastEthernet0/0", "10.0.0.1"),
+            {"node_id": "r2", "name": "R2", "node_type": "dynamips"},
+        ]
+        links = [
+            {
+                "link_id": "l1",
+                "nodes": [
+                    {"node_id": "r1", "adapter_number": 0, "port_number": 0},
+                    {"node_id": "r2", "adapter_number": 0, "port_number": 0},
+                ],
+            }
+        ]
+
+        async def discover(*args, **kwargs):
+            if kwargs["node_id"] == "r1":
+                return self._discovered("r1", "R1", "FastEthernet0/0", "10.0.0.1")
+            return self._discovered("r2", "R2", "FastEthernet0/0", "10.0.0.2")
+
+        with (
+            patch.object(connectivityService, "get_project_nodes", new_callable=AsyncMock, return_value=nodes),
+            patch.object(connectivityService, "discover_node_interfaces", side_effect=discover),
+            patch.object(connectivityService, "get_project_links", new_callable=AsyncMock, return_value=links),
+            patch.object(connectivityService, "run_node_ping", new_callable=AsyncMock) as run_ping,
+        ):
+            result = await connectivityService.check_project_connectivity(None, 1, None)
+
+        self.assertEqual(len(result["results"]), 2)
+        self.assertTrue(all(item.state == "skipped" for item in result["results"]))
+        self.assertTrue(all(item.reason == "interface_mapping_ambiguous" for item in result["results"]))
+        run_ping.assert_not_awaited()
+
+    async def test_down_destination_is_skipped_without_ping(self):
+        nodes = [
+            self._node("r1", "R1", "FastEthernet0/0", "10.0.0.1"),
+            self._node("r2", "R2", "FastEthernet0/0", "10.0.0.2"),
+        ]
+        links = [
+            {
+                "link_id": "l1",
+                "nodes": [
+                    {"node_id": "r1", "adapter_number": 0, "port_number": 0},
+                    {"node_id": "r2", "adapter_number": 0, "port_number": 0},
+                ],
+            }
+        ]
+
+        async def discover(*args, **kwargs):
+            node_id = kwargs["node_id"]
+            name = "R1" if node_id == "r1" else "R2"
+            item = connectivityService.DiscoveredInterface(
+                node_id=node_id,
+                node_name=name,
+                interface="FastEthernet0/0",
+                ip_address=IPv4Address("10.0.0.1" if node_id == "r1" else "10.0.0.2"),
+                status="up" if node_id == "r1" else "down",
+                protocol="up" if node_id == "r1" else "down",
+            )
+            return [item]
+
+        with (
+            patch.object(connectivityService, "get_project_nodes", new_callable=AsyncMock, return_value=nodes),
+            patch.object(connectivityService, "discover_node_interfaces", side_effect=discover),
+            patch.object(connectivityService, "get_project_links", new_callable=AsyncMock, return_value=links),
+            patch.object(connectivityService, "run_node_ping", new_callable=AsyncMock) as run_ping,
+        ):
+            result = await connectivityService.check_project_connectivity(None, 1, None)
+
+        self.assertEqual(len(result["results"]), 2)
+        self.assertTrue(all(item.state == "skipped" for item in result["results"]))
+        self.assertIn("protocol_down", {item.reason for item in result["results"]})
+        run_ping.assert_not_awaited()

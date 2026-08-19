@@ -35,3 +35,19 @@ class ConnectivityDiscoveryNodeResult(BaseModel):
 class ConnectivityEndpointsResponse(BaseModel):
     endpoints: list[DiscoveredInterface]
     node_results: list[ConnectivityDiscoveryNodeResult]
+
+
+class ConnectivityCheckResult(BaseModel):
+    source_node_id: str
+    source_interface: str | None = None
+    destination_node_id: str | None = None
+    destination_interface: str | None = None
+    destination_ip: IPv4Address | None = None
+    state: Literal["reachable", "unreachable", "skipped", "error"]
+    reason: str | None = None
+    packet_loss_percent: int | None = None
+    latency_ms: float | None = None
+
+
+class ConnectivityCheckResponse(BaseModel):
+    results: list[ConnectivityCheckResult]

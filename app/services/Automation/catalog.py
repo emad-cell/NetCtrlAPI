@@ -13,6 +13,15 @@ CATALOG: list[AutomationTask] = [
         params=[],
     ),
     AutomationTask(
+        id="check_connectivity",
+        name="Check Project Connectivity",
+        description="Check IPv4 reachability across unambiguous physical neighbor links.",
+        category="Connectivity",
+        endpoint="/projects/{project_id}/connectivity/check",
+        supported_device_types=["router", "switch"],
+        params=[],
+    ),
+    AutomationTask(
         id="ping",
         name="Ping",
         description="Test IPv4 reachability from this device.",
